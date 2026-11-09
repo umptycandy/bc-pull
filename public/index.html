@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3eee4">
+<title>BC Pull</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f3eee4;
+    --card: #fbf8f2;
+    --ink: #171513;
+    --muted: #6f6a62;
+    --line: #ddd5c6;
+    --red: #d63d27;
+    --green: #2e7a4d;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); }
+  body {
+    font: 15px/1.45 "Archivo", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  button { font: inherit; color: inherit; cursor: pointer; }
+
+  header {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--paper);
+    border-bottom: 3px solid var(--ink);
+    padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  }
+  .top { display: flex; align-items: baseline; gap: 10px; }
+  h1 {
+    font: 34px/1 "Anton", Impact, sans-serif;
+    letter-spacing: .5px; margin: 0; text-transform: uppercase;
+  }
+  h1 span { color: var(--red); }
+  .count { color: var(--muted); font-size: 13px; flex: 1; }
+  .icon-btn {
+    border: 2px solid var(--ink); background: var(--card);
+    border-radius: 999px; padding: 4px 12px; font-weight: 600; font-size: 13px;
+  }
+  .icon-btn:active { transform: translateY(1px); }
+
+  .controls { padding: 12px 16px 4px; max-width: 760px; margin: 0 auto; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .toggle {
+    border: 1.5px solid var(--line); background: var(--card);
+    border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600;
+  }
+  .toggle[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .spacer { flex: 1; }
+  .link-btn { background: none; border: 0; color: var(--muted); font-size: 13px; text-decoration: underline; padding: 6px 2px; }
+
+  .section-label {
+    font: 12px/1 "Archivo", system-ui, sans-serif; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--muted); margin: 16px 0 8px; display: flex; gap: 8px; align-items: center;
+  }
+  .hint { font-weight: 500; letter-spacing: 0; text-transform: none; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    border: 1.5px solid var(--line); background: var(--card);
+    border-radius: 6px; padding: 4px 9px; font-size: 13px; font-weight: 500;
+    display: inline-flex; gap: 6px; align-items: center;
+  }
+  .chip small { color: var(--muted); font-size: 11px; }
+  .chip.include { background: var(--green); border-color: var(--green); color: #fff; }
+  .chip.mute { background: transparent; border-color: var(--red); color: var(--red); text-decoration: line-through; }
+  .chip.include small { color: #d5eadc; }
+  .chip.mute small { color: var(--red); }
+
+  .mute-form { display: flex; gap: 6px; margin-top: 8px; }
+  .mute-form input {
+    flex: 1; min-width: 0; font: inherit; font-size: 14px;
+    border: 1.5px solid var(--line); background: var(--card); border-radius: 6px; padding: 6px 10px;
+  }
+  .word { border-color: var(--red); color: var(--red); }
+
+  main { max-width: 760px; margin: 0 auto; padding: 8px 16px 40px; }
+  .day {
+    font: 20px/1 "Anton", Impact, sans-serif; text-transform: uppercase;
+    margin: 22px 0 10px; border-bottom: 1.5px solid var(--ink); padding-bottom: 6px;
+  }
+  .post {
+    display: grid; grid-template-columns: 96px 1fr; gap: 12px;
+    background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius);
+    padding: 10px; margin-bottom: 10px; color: inherit; text-decoration: none;
+    transition: opacity .2s;
+  }
+  .post.read { opacity: .45; }
+  .thumb {
+    width: 96px; aspect-ratio: 2 / 3; border-radius: 6px; overflow: hidden;
+    background: repeating-linear-gradient(135deg, #e7e0d3 0 8px, #efe9de 8px 16px);
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .post h2 { font-size: 16px; line-height: 1.25; margin: 0 0 4px; font-weight: 700; }
+  .desc {
+    color: #3d3a35; font-size: 13.5px; margin: 0 0 6px;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .meta { color: var(--muted); font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px 8px; }
+  .meta b { color: var(--ink); font-weight: 600; }
+  .new-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); display: inline-block; margin-right: 6px; vertical-align: 2px; }
+  .empty, .status { text-align: center; color: var(--muted); padding: 40px 10px; }
+  .status.error { color: var(--red); }
+  details summary { cursor: pointer; list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  @media (min-width: 640px) {
+    .post { grid-template-columns: 120px 1fr; }
+    .thumb { width: 120px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>BC <span>Pull</span></h1>
+    <div class="count" id="count"></div>
+    <button class="icon-btn" id="refresh">Refresh</button>
+  </div>
+</header>
+
+<section class="controls">
+  <div class="row">
+    <button class="toggle" id="unreadOnly" aria-pressed="false">Unread only</button>
+    <button class="toggle" id="hideBot" aria-pressed="true">Hide LOLtron</button>
+    <span class="spacer"></span>
+    <button class="link-btn" id="markAll">Mark all read</button>
+  </div>
+
+  <details id="filters">
+    <summary class="section-label">Tags <span class="hint">· tap: show only → mute → off</span></summary>
+    <div class="chips" id="tagChips"></div>
+    <button class="link-btn" id="moreTags"></button>
+
+    <div class="section-label">Muted words <span class="hint">· hides posts mentioning these</span></div>
+    <div class="chips" id="wordChips"></div>
+    <form class="mute-form" id="muteForm">
+      <input id="muteInput" placeholder="Add a word, e.g. trailer" autocomplete="off">
+      <button class="icon-btn" type="submit">Mute</button>
+    </form>
+  </details>
+</section>
+
+<main id="feed"><div class="status">Loading…</div></main>
+
+<script>
+const KEY = "bcpull.v1";
+const DEFAULTS = {
+  tags: {
+    // Toys and collectibles muted by default
+    "collectibles": "mute", "toys": "mute", "mcfarlane toys": "mute", "funko": "mute"
+  },
+  words: ["action figure", "funko", "toys", "statue"],
+  hideBot: true,
+  unreadOnly: false,
+  read: {},
+  archive: {}
+};
+
+function load() {
+  try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) || "{}") }; }
+  catch { return structuredClone(DEFAULTS); }
+}
+let S = load();
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {}
+}
+
+const $ = (id) => document.getElementById(id);
+const norm = (t) => t.trim().toLowerCase();
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const IGNORE_TAGS = new Set(["comics"]);
+let showAllTags = false;
+
+const wordRe = (w) => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+
+function isBot(it) { return /loltron/i.test(it.author); }
+
+function visible(it) {
+  if (S.hideBot && isBot(it)) return false;
+  if (S.unreadOnly && S.read[it.id]) return false;
+  const tags = it.categories.map(norm);
+  const text = `${it.title} ${it.description}`;
+  if (tags.some((t) => S.tags[t] === "mute")) return false;
+  if (S.words.some((w) => wordRe(w).test(text))) return false;
+  const includes = Object.keys(S.tags).filter((t) => S.tags[t] === "include");
+  if (includes.length) {
+    return includes.some((t) => tags.includes(t) || wordRe(t).test(it.title));
+  }
+  return true;
+}
+
+function items() {
+  return Object.values(S.archive).sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function dayLabel(d) {
+  const date = new Date(d), today = new Date();
+  const y = new Date(); y.setDate(today.getDate() - 1);
+  if (date.toDateString() === today.toDateString()) return "Today";
+  if (date.toDateString() === y.toDateString()) return "Yesterday";
+  return date.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" });
+}
+const time = (d) => new Date(d).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+
+function renderFeed() {
+  const all = items();
+  const list = all.filter(visible);
+  const unread = list.filter((it) => !S.read[it.id]).length;
+  $("count").textContent = all.length ? `${unread} unread · ${all.length - list.length} hidden` : "";
+
+  if (!all.length) return;
+  if (!list.length) {
+    $("feed").innerHTML = `<div class="empty">Nothing matches your filters right now.</div>`;
+    return;
+  }
+  let html = "", lastDay = "";
+  for (const it of list) {
+    const day = dayLabel(it.date);
+    if (day !== lastDay) { html += `<div class="day">${day}</div>`; lastDay = day; }
+    const tags = it.categories.filter((t) => !IGNORE_TAGS.has(norm(t))).slice(0, 3).join(" · ");
+    html += `
+      <a class="post ${S.read[it.id] ? "read" : ""}" href="${esc(it.link)}" target="_blank" rel="noopener" data-id="${esc(it.id)}">
+        <div class="thumb">${it.image ? `<img src="${esc(it.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}</div>
+        <div>
+          <h2>${S.read[it.id] ? "" : `<span class="new-dot"></span>`}${esc(it.title)}</h2>
+          <p class="desc">${esc(it.description)}</p>
+          <div class="meta"><b>${esc(tags)}</b><span>${time(it.date)} · ${esc(it.author)}</span></div>
+        </div>
+      </a>`;
+  }
+  $("feed").innerHTML = html;
+}
+
+function renderChips() {
+  const counts = {};
+  for (const it of items()) for (const t of it.categories) {
+    const n = norm(t);
+    if (!IGNORE_TAGS.has(n)) counts[n] = (counts[n] || 0) + 1;
+  }
+  // Tags you've set always show (even if not in the current posts), then the most common
+  const set = Object.keys(S.tags);
+  const rest = Object.keys(counts).filter((t) => !S.tags[t]).sort((a, b) => counts[b] - counts[a]);
+  const limit = showAllTags ? rest.length : 18;
+  const shown = [...set.sort((a, b) => (S.tags[a] === S.tags[b] ? a.localeCompare(b) : S.tags[a] === "include" ? -1 : 1)), ...rest.slice(0, limit)];
+  $("tagChips").innerHTML = shown.map((t) =>
+    `<button class="chip ${S.tags[t] || ""}" data-tag="${esc(t)}">${esc(t)}${counts[t] ? ` <small>${counts[t]}</small>` : ""}</button>`
+  ).join("");
+  $("moreTags").textContent = rest.length > 18 ? (showAllTags ? "Show fewer tags" : `Show all ${rest.length} tags`) : "";
+  $("wordChips").innerHTML = S.words.map((w) => `<button class="chip word" data-word="${esc(w)}">${esc(w)} ✕</button>`).join("");
+  $("unreadOnly").setAttribute("aria-pressed", S.unreadOnly);
+  $("hideBot").setAttribute("aria-pressed", S.hideBot);
+}
+
+function render() { renderChips(); renderFeed(); }
+
+async function refresh() {
+  $("refresh").textContent = "…";
+  try {
+    const res = await fetch("/api/feed");
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.status);
+    for (const it of data.items) {
+      const old = S.archive[it.id];
+      S.archive[it.id] = { ...it, image: it.image || old?.image || "" };
+    }
+    // Keep the newest 400 posts so the archive builds up beyond the feed's 30
+    const keep = items().slice(0, 400);
+    S.archive = Object.fromEntries(keep.map((it) => [it.id, it]));
+    for (const id of Object.keys(S.read)) if (!S.archive[id]) delete S.read[id];
+    save();
+    render();
+  } catch (e) {
+    if (!items().length) $("feed").innerHTML = `<div class="status error">Couldn't load the feed (${esc(String(e.message || e))}).</div>`;
+  } finally {
+    $("refresh").textContent = "Refresh";
+  }
+}
+
+$("feed").addEventListener("click", (e) => {
+  const a = e.target.closest(".post");
+  if (!a) return;
+  S.read[a.dataset.id] = true; save();
+  setTimeout(renderFeed, 300);
+});
+$("tagChips").addEventListener("click", (e) => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  const t = b.dataset.tag, cur = S.tags[t];
+  if (!cur) S.tags[t] = "include";
+  else if (cur === "include") S.tags[t] = "mute";
+  else delete S.tags[t];
+  save(); render();
+});
+$("wordChips").addEventListener("click", (e) => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  S.words = S.words.filter((w) => w !== b.dataset.word); save(); render();
+});
+$("muteForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const w = norm($("muteInput").value);
+  if (w && !S.words.includes(w)) S.words.push(w);
+  $("muteInput").value = ""; save(); render();
+});
+$("moreTags").addEventListener("click", () => { showAllTags = !showAllTags; renderChips(); });
+$("unreadOnly").addEventListener("click", () => { S.unreadOnly = !S.unreadOnly; save(); render(); });
+$("hideBot").addEventListener("click", () => { S.hideBot = !S.hideBot; save(); render(); });
+$("markAll").addEventListener("click", () => {
+  for (const it of items().filter(visible)) S.read[it.id] = true;
+  save(); render();
+});
+$("refresh").addEventListener("click", refresh);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+
+render();
+refresh();
+</script>
+</body>
+</html>
